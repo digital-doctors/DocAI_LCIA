@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Analysis App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #eef2f7;
+            font-family: 'Arial', sans-serif;
+        }
+        .container-custom {
+            max-width: 650px;
+            background: white;
+            padding: 30px;
+            margin: 50px auto;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .btn-custom {
+            font-size: 18px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            width: 100%;
+        }
+        #video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .report-container {
+            background: #f1f1f1;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        .loading {
+            font-style: italic;
+            color: #6c757d;
+        }
+        .chat-container {
+            display: none;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .chat-header h2 {
+            font-size: 20px;
+            color: #007bff;
+        }
+        .btn-danger {
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .chat-box {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .chat-message {
+            padding: 8px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+        }
+        .user-message {
+            background-color: #d1e7ff;
+            align-self: flex-start;
+        }
+        .doctor-message {
+            background-color: #e2e3e5;
+            align-self: flex-end;
+        }
+        .chat-input-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .chat-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Previous Health Reports Section -->
+    <div class="container-custom">
+        <h1>Previous Health Reports</h1>
+        <div id="reports">
+            <p class="loading">Fetching previous reports...</p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/get_reports")
+                .then(response => response.json())
+                .then(data => {
+                    const reportsDiv = document.getElementById("reports");
+                    reportsDiv.innerHTML = ""; // Clear the loading message
+                    data.reports.forEach(report => {
+                        const reportElement = document.createElement("div");
+                        reportElement.classList.add("report-container");
+                        reportElement.innerHTML = `<p>${report}</p>`;
+                        reportsDiv.appendChild(reportElement);
+                    });
+                })
+                .catch(error => {
+                    document.getElementById("reports").innerHTML = 
+                        "<p class='text-danger'>Failed to load reports.</p>";
+                });
+        });
+    </script>
+
+<!-- Health Scan Section -->
+<div class="container-custom">
+    <h1>Health Scan</h1>
+    <video id="video" autoplay></video>
+    <button id="analyzeBtn" class="btn btn-primary btn-custom">Start Health Analysis</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    const video = document.getElementById("video");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const resultDiv = document.getElementById("result");
+
+    analyzeBtn.onclick = function () {
+        resultDiv.innerHTML = "";
+        video.style.display = "block";
+        analyzeBtn.disabled = true;
+
+        // Start webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((error) => {
+                console.error("Error accessing webcam:", error);
+                resultDiv.innerHTML = `<p class="text-danger">Unable to access webcam. Please check your device permissions.</p>`;
+                analyzeBtn.disabled = false;
+            });
+
+        // Simulate scanning effect
+        setTimeout(() => {
+            video.style.display = "none";
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+
+            resultDiv.innerHTML = `<p class="loading">Processing your health data...</p>`;
+
+            fetch('/analyze')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Server error. Failed to analyze health data.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="report-container">
+                            <h4>Health Data</h4>
+                            <p><strong>Heart Rate:</strong> ${data.heart_rate}</p>
+                            <p><strong>Hydration:</strong> ${data.hydration}</p>
+                            <p><strong>Temperature:</strong> ${data.temperature}</p>
+                            <p><strong>Blood Pressure:</strong> ${data.blood_pressure}</p>
+                            <p class="loading">Generating AI Health Report...</p>
+                        </div>
+                    `;
+
+                    return fetch('/report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to generate AI Health Report.");
+                    }
+                    return response.json();
+                })
+                .then(report => {
+                    resultDiv.innerHTML += `
+                        <div class="report-container">
+                            <h4>AI Health Report</h4>
+                            <p>${report.report}</p>
+                        </div>
+                    `;
+                    analyzeBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error(error);
+                    resultDiv.innerHTML = `<p class="text-danger">${error.message}</p>`;
+                    analyzeBtn.disabled = false;
+                });
+        }, 5000); // Simulate scanning for 5 seconds
+    };
+</script>
+
+
+    <!-- Connect with Doctor Section -->
+    <div class="container-custom">
+        <h1>Connect with a Doctor</h1>
+        <p>Select a doctor from the list below and start a consultation.</p>
+        <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. John Smith - Cardiologist <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. John Smith')">Chat</button></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. Sarah Johnson - Neurologist <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. Sarah Johnson')">Chat</button></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. Emily Davis - Pediatrician <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. Emily Davis')">Chat</button></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. Michael Brown - Dermatologist <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. Michael Brown')">Chat</button></li>
+        </ul>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <h2 id="chatDoctor">Chat with Doctor</h2>
+            <button class="btn btn-danger btn-sm" onclick="closeChat()">Close</button>
+        </div>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Type a message...">
+            <button class="btn btn-primary btn-custom" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        let currentDoctor = "";
+
+        function startChat(doctorName) {
+            currentDoctor = doctorName;
+            document.getElementById("chatDoctor").innerText = `Chat with ${doctorName}`;
+            document.getElementById("chatContainer").style.display = "block";
+        }
+
+        function sendMessage() {
+            const chatBox = document.getElementById("chatBox");
+            const chatInput = document.getElementById("chatInput");
+            const message = chatInput.value.trim();
+
+            if (message) {
+                chatBox.innerHTML += `<div class="chat-message user-message"><strong>You:</strong> ${message}</div>`;
+                chatInput.value = "";
+
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ doctor: currentDoctor, message: message })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.response) {
+                            chatBox.innerHTML += `
+                                <div class="chat-message doctor-message">
+                                    <strong>${currentDoctor}:</strong> ${data.response}
+                                </div>
+                            `;
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                        } else {
+                            chatBox.innerHTML += `<div class="chat-message doctor-message text-danger">Error: No response received.</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Chat API error:", error);
+                        chatBox.innerHTML += `<div class="chat-message doctor-message text-danger">Error: Could not reach the server.</div>`;
+                    });
+            }
+        }
+
+        function closeChat() {
+            document.getElementById("chatContainer").style.display = "none";
+        }
+    </script>
+</body>
+</html>
