@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -103,8 +104,15 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .voice-button {
@@ -124,38 +132,42 @@
     }
 
     h1 {
-    font-size: 36px; /* Increased font size */
-    font-weight: 700; /* Made the text bolder */
-    text-align: center;
-    margin: 20px 0 30px; /* Adjusted spacing */
-  }
-  #voiceAssistant {
-    font-size: 18px;
-    font-weight: 600;
-    border-radius: 50px;
-    background-color: #4a90e2;
-    border: none;
-    color: white;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
+      font-size: 36px;
+      /* Increased font size */
+      font-weight: 700;
+      /* Made the text bolder */
+      text-align: center;
+      margin: 20px 0 30px;
+      /* Adjusted spacing */
+    }
 
-  #voiceAssistant:hover {
-    background-color: #357ab8;
-    transform: scale(1.05);
-  }
+    #voiceAssistant {
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 50px;
+      background-color: #4a90e2;
+      border: none;
+      color: white;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
 
-  #voiceAssistant:active {
-    background-color: #2b5f8a;
-    transform: scale(0.95);
-  }
+    #voiceAssistant:hover {
+      background-color: #357ab8;
+      transform: scale(1.05);
+    }
+
+    #voiceAssistant:active {
+      background-color: #2b5f8a;
+      transform: scale(0.95);
+    }
   </style>
 </head>
+
 <body>
   <div class="container-custom fade-in">
-    <div class="text-end">
-      <button id="toggleMode" class="btn btn-primary btn-lg px-4 py-2">🌙</button>
-    </div>
-    <h1>DocAI - Health Portal</h1>
+
+    <h1>My DocAI</h1>
+
     <div class="text-center mb-2">
       <button id="voiceAssistant" class="btn btn-primary btn-lg px-4 py-2">Voice Assistant</button>
     </div>
@@ -163,16 +175,20 @@
 
     <ul class="nav nav-tabs" id="tabMenu" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="patient-tab" data-bs-toggle="tab" data-bs-target="#patient" type="button" role="tab">Details</button>
+        <button class="nav-link active" id="patient-tab" data-bs-toggle="tab" data-bs-target="#patient" type="button"
+          role="tab">Details</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="scan-tab" data-bs-toggle="tab" data-bs-target="#scan" type="button" role="tab">Scan</button>
+        <button class="nav-link" id="scan-tab" data-bs-toggle="tab" data-bs-target="#scan" type="button"
+          role="tab">Scan</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#form" type="button" role="tab">Form</button>
+        <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#form" type="button"
+          role="tab">Form</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image" type="button" role="tab">Image Analysis</button>
+        <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image" type="button"
+          role="tab">Imaging</button>
       </li>
     </ul>
 
@@ -203,24 +219,26 @@
           <button type="submit" class="btn btn-primary w-100">Submit Patient Info</button>
         </form>
       </div>
-  
+
       <!-- Health Scan Tab -->
       <div class="tab-pane fade" id="scan" role="tabpanel">
         <div class="card mt-3">
           <div class="card-body">
             <div class="video-container text-center mb-3">
-              <video id="video" autoplay muted playsinline style="display: none; width: 100%; border-radius: 12px;"></video>
+              <video id="video" autoplay muted playsinline
+                style="display: none; width: 100%; border-radius: 12px;"></video>
             </div>
             <button id="analyzeBtn" class="btn-custom">Start Health Analysis</button>
             <div id="lottieLoading" class="text-center mt-3" style="display: none;">
-              <lottie-player src="https://assets9.lottiefiles.com/packages/lf20_usmfx6bp.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+              <lottie-player src="https://assets9.lottiefiles.com/packages/lf20_usmfx6bp.json" background="transparent"
+                speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
               <p>Processing health data...</p>
             </div>
             <div id="result" class="mt-4"></div>
           </div>
         </div>
       </div>
-  
+
       <!-- Health Form Tab -->
       <div class="tab-pane fade" id="form" role="tabpanel">
         <form id="healthForm" method="POST" action="/submit-form" class="mt-4">
@@ -247,130 +265,130 @@
           <button type="submit" class="btn btn-primary w-100">Submit Form</button>
         </form>
       </div>
-  
+
       <!-- Input Images Tab -->
-<div class="tab-pane fade" id="image" role="tabpanel">
-  <div class="card mt-3">
-    <div class="card-body">
-      <h4 class="card-title text-center">Upload Images for Analysis</h4>
-      <p class="text-muted text-center">Upload one or more images for AI-powered analysis.</p>
-      <form id="imageForm" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="images" class="form-label">Select Images</label>
-          <input class="form-control" type="file" id="images" name="images" accept="image/*" multiple required>
+      <div class="tab-pane fade" id="image" role="tabpanel">
+        <div class="card mt-3">
+          <div class="card-body">
+            <h4 class="card-title text-center">Upload Images for Analysis</h4>
+            <p class="text-muted text-center">Upload one or more images for AI-powered analysis.</p>
+            <form id="imageForm" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label for="images" class="form-label">Select Images</label>
+                <input class="form-control" type="file" id="images" name="images" accept="image/*" multiple required>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Analyze Images</button>
+            </form>
+            <div id="imageResult" class="mt-4"></div>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Analyze Images</button>
-      </form>
-      <div id="imageResult" class="mt-4"></div>
-    </div>
-  </div>
-</div>
+      </div>
 
-  <footer class="text-center mt-4 mb-2">
-    <p>&copy; 2025 DocAI</p>
-  </footer>
-  <script>
-  const imageForm = document.getElementById('imageForm');
-  const imageResult = document.getElementById('imageResult');
+      <footer class="text-center mt-4 mb-2">
+        <p>&copy; 2025 DocAI</p>
+      </footer>
+      <script>
+        const imageForm = document.getElementById('imageForm');
+        const imageResult = document.getElementById('imageResult');
 
-  imageForm.addEventListener('submit', function (e) {
-    e.preventDefault();
+        imageForm.addEventListener('submit', function (e) {
+          e.preventDefault();
 
-    const formData = new FormData(imageForm);
+          const formData = new FormData(imageForm);
 
-    imageResult.innerHTML = `<p class="text-info">Analyzing images, please wait...</p>`;
+          imageResult.innerHTML = `<p class="text-info">Analyzing images, please wait...</p>`;
 
-    fetch('/analyze-image', {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          imageResult.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
-        } else {
-          imageResult.innerHTML = `<p class="text-success">${data.message}</p>`;
-        }
-      })
-      .catch(error => {
-        console.error("Error analyzing images:", error);
-        imageResult.innerHTML = `<p class="text-danger">Error analyzing images: ${error.message}</p>`;
-      });
-  });
-</script>
-<script>
-  const subscriptionForm = document.getElementById('subscriptionForm');
-  const subscriptionResult = document.getElementById('subscriptionResult');
+          fetch('/analyze-image', {
+            method: 'POST',
+            body: formData
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                imageResult.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
+              } else {
+                imageResult.innerHTML = `<p class="text-success">${data.message}</p>`;
+              }
+            })
+            .catch(error => {
+              console.error("Error analyzing images:", error);
+              imageResult.innerHTML = `<p class="text-danger">Error analyzing images: ${error.message}</p>`;
+            });
+        });
+      </script>
+      <script>
+        const subscriptionForm = document.getElementById('subscriptionForm');
+        const subscriptionResult = document.getElementById('subscriptionResult');
 
-  subscriptionForm.addEventListener('submit', function (e) {
-    e.preventDefault();
+        subscriptionForm.addEventListener('submit', function (e) {
+          e.preventDefault();
 
-    const formData = new FormData(subscriptionForm);
+          const formData = new FormData(subscriptionForm);
 
-    subscriptionResult.innerHTML = `<p class="text-info">Submitting your subscription, please wait...</p>`;
+          subscriptionResult.innerHTML = `<p class="text-info">Submitting your subscription, please wait...</p>`;
 
-    fetch('/submit-subscription', {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          subscriptionResult.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
-        } else {
-          subscriptionResult.innerHTML = `<p class="text-success">${data.message}</p>`;
-        }
-      })
-      .catch(error => {
-        console.error("Error submitting subscription:", error);
-        subscriptionResult.innerHTML = `<p class="text-danger">Error submitting subscription: ${error.message}</p>`;
-      });
-  });
-</script>
+          fetch('/submit-subscription', {
+            method: 'POST',
+            body: formData
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                subscriptionResult.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
+              } else {
+                subscriptionResult.innerHTML = `<p class="text-success">${data.message}</p>`;
+              }
+            })
+            .catch(error => {
+              console.error("Error submitting subscription:", error);
+              subscriptionResult.innerHTML = `<p class="text-danger">Error submitting subscription: ${error.message}</p>`;
+            });
+        });
+      </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  const video = document.getElementById("video");
-  const analyzeBtn = document.getElementById("analyzeBtn");
-  const resultDiv = document.getElementById("result");
-  const lottie = document.getElementById("lottieLoading");
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      <script>
+        const video = document.getElementById("video");
+        const analyzeBtn = document.getElementById("analyzeBtn");
+        const resultDiv = document.getElementById("result");
+        const lottie = document.getElementById("lottieLoading");
 
-  analyzeBtn.onclick = function () {
-    resultDiv.innerHTML = "";
-    lottie.style.display = "block";
-    video.style.display = "block";
-    analyzeBtn.disabled = true;
+        analyzeBtn.onclick = function () {
+          resultDiv.innerHTML = "";
+          lottie.style.display = "block";
+          video.style.display = "block";
+          analyzeBtn.disabled = true;
 
-    navigator.mediaDevices.getUserMedia({
-  video: {
-    facingMode: "user" // Use front-facing camera on mobile
-  }
-})
-.then((stream) => {
-  const video = document.getElementById("video");
-  video.srcObject = stream;
+          navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user" // Use front-facing camera on mobile
+            }
+          })
+            .then((stream) => {
+              const video = document.getElementById("video");
+              video.srcObject = stream;
 
-  // Required for iOS Safari to not go fullscreen
-  video.setAttribute("playsinline", true);
-  video.style.display = "block"; // Show video element
-})
-.catch((error) => {
-  console.error("Camera access error:", error);
-  alert("Unable to access camera. Please check permissions and reload the page.");
-});
+              // Required for iOS Safari to not go fullscreen
+              video.setAttribute("playsinline", true);
+              video.style.display = "block"; // Show video element
+            })
+            .catch((error) => {
+              console.error("Camera access error:", error);
+              alert("Unable to access camera. Please check permissions and reload the page.");
+            });
 
 
-    setTimeout(() => {
-      video.style.display = "none";
-      if (video.srcObject) {
-        video.srcObject.getTracks().forEach(track => track.stop());
-      }
+          setTimeout(() => {
+            video.style.display = "none";
+            if (video.srcObject) {
+              video.srcObject.getTracks().forEach(track => track.stop());
+            }
 
-      fetch('/analyze')
-        .then(response => response.json())
-        .then(data => {
-          lottie.style.display = "none";
-          resultDiv.innerHTML = `
+            fetch('/analyze')
+              .then(response => response.json())
+              .then(data => {
+                lottie.style.display = "none";
+                resultDiv.innerHTML = `
             <div class="report-container fade-in">
               <h4>Health Data</h4>
               <p><strong>Heart Rate:</strong> ${data.heart_rate}</p>
@@ -381,76 +399,77 @@
             </div>
           `;
 
-          return fetch('/send_report', {
+                return fetch('/send_report', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify(data)
+                });
+              })
+              .then(response => response.json())
+              .then(result => {
+                Swal.fire({
+                  title: "Report Sent!",
+                  text: "Your health report was sent to the doctor successfully.",
+                  icon: "success",
+                  confirmButtonColor: "#4a90e2"
+                });
+              })
+              .catch(error => {
+                console.error("Error sending report:", error);
+                Swal.fire({
+                  title: "Oops...",
+                  text: "There was an error sending the report. Please try again.",
+                  icon: "error",
+                  confirmButtonColor: "#4a90e2"
+                });
+              })
+              .finally(() => {
+                analyzeBtn.disabled = false;
+              });
+          }, 4000);
+        };
+
+        document.getElementById("toggleMode").onclick = () => {
+          document.body.classList.toggle("dark-mode");
+        };
+
+        document.getElementById("voiceAssistant").onclick = () => {
+          const message = new SpeechSynthesisUtterance("Welcome to DocAI. You can start a health scan, fill in the form, or upload an image for analysis. Please begin by selecting a tab, before the doctor arrives.");
+          message.lang = 'en-US';
+          speechSynthesis.speak(message);
+        };
+        // Patient Info Submission Confirmation
+        document.getElementById("patientInfoForm").addEventListener("submit", function (event) {
+          event.preventDefault();
+          const form = event.target;
+
+          fetch(form.action, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-        })
-        .then(response => response.json())
-        .then(result => {
-          Swal.fire({
-            title: "Report Sent!",
-            text: "Your health report was sent to the doctor successfully.",
-            icon: "success",
-            confirmButtonColor: "#4a90e2"
-          });
-        })
-        .catch(error => {
-          console.error("Error sending report:", error);
-          Swal.fire({
-            title: "Oops...",
-            text: "There was an error sending the report. Please try again.",
-            icon: "error",
-            confirmButtonColor: "#4a90e2"
-          });
-        })
-        .finally(() => {
-          analyzeBtn.disabled = false;
+            body: new FormData(form)
+          })
+            .then(response => response.text())
+            .then(result => {
+              Swal.fire({
+                title: "Submitted!",
+                text: "Patient information was sent successfully.",
+                icon: "success",
+                confirmButtonColor: "#4a90e2"
+              });
+              form.reset();
+            })
+            .catch(error => {
+              Swal.fire({
+                title: "Error!",
+                text: "There was a problem submitting the patient info.",
+                icon: "error",
+                confirmButtonColor: "#4a90e2"
+              });
+              console.error("Error submitting patient info:", error);
+            });
         });
-    }, 4000);
-  };
 
-  document.getElementById("toggleMode").onclick = () => {
-    document.body.classList.toggle("dark-mode");
-  };
-
-  document.getElementById("voiceAssistant").onclick = () => {
-    const message = new SpeechSynthesisUtterance("Welcome to DocAI. You can start a health scan, fill in the form, or upload an image for analysis. Please begin by selecting a tab, before the doctor arrives.");
-    message.lang = 'en-US';
-    speechSynthesis.speak(message);
-  };
-  // Patient Info Submission Confirmation
-document.getElementById("patientInfoForm").addEventListener("submit", function (event) {
-  event.preventDefault();
-  const form = event.target;
-
-  fetch(form.action, {
-    method: 'POST',
-    body: new FormData(form)
-  })
-  .then(response => response.text())
-  .then(result => {
-    Swal.fire({
-      title: "Submitted!",
-      text: "Patient information was sent successfully.",
-      icon: "success",
-      confirmButtonColor: "#4a90e2"
-    });
-    form.reset();
-  })
-  .catch(error => {
-    Swal.fire({
-      title: "Error!",
-      text: "There was a problem submitting the patient info.",
-      icon: "error",
-      confirmButtonColor: "#4a90e2"
-    });
-    console.error("Error submitting patient info:", error);
-  });
-});
-
-    </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      </script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
