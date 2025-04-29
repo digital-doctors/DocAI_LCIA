@@ -1,319 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Analysis App</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #eef2f7;
-            font-family: 'Arial', sans-serif;
-        }
-        .container-custom {
-            max-width: 650px;
-            background: white;
-            padding: 30px;
-            margin: 50px auto;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h1 {
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 20px;
-        }
-        .btn-custom {
-            font-size: 18px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            width: 100%;
-        }
-        #video {
-            width: 100%;
-            max-width: 400px;
-            border-radius: 10px;
-            margin-top: 15px;
-            display: none;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .report-container {
-            background: #f1f1f1;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: left;
-        }
-        .loading {
-            font-style: italic;
-            color: #6c757d;
-        }
-        .chat-container {
-            display: none;
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 10px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .chat-header h2 {
-            font-size: 20px;
-            color: #007bff;
-        }
-        .btn-danger {
-            font-size: 14px;
-            padding: 5px 10px;
-            border-radius: 20px;
-        }
-        .chat-box {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .chat-message {
-            padding: 8px;
-            margin-bottom: 12px;
-            border-radius: 10px;
-        }
-        .user-message {
-            background-color: #d1e7ff;
-            align-self: flex-start;
-        }
-        .doctor-message {
-            background-color: #e2e3e5;
-            align-self: flex-end;
-        }
-        .chat-input-container {
-            display: flex;
-            justify-content: space-between;
-        }
-        .chat-input {
-            width: 80%;
-            padding: 10px;
-            font-size: 14px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            margin-right: 10px;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocAI - Health Analysis</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    :root {
+      --bg-light: #f9fafb;
+      --bg-dark: #1a1a1a;
+      --card-light: #ffffff;
+      --card-dark: #2c2c2c;
+      --text-light: #1a1a1a;
+      --text-dark: #e0e0e0;
+      --primary: #0066cc;
+      --success: #28a745;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      margin: 0;
+      padding: 0;
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .container-custom {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 16px;
+      background: var(--card-light);
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    body.dark-mode .container-custom {
+      background: var(--card-dark);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      text-align: center;
+      margin: 12px 0 20px;
+    }
+
+    .tab-pane {
+      padding-top: 15px;
+    }
+
+    .btn-custom {
+      background: var(--primary);
+      border: none;
+      color: white;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 12px;
+      border-radius: 10px;
+      width: 100%;
+    }
+
+    .btn-custom:hover {
+      background: #004c99;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 10px;
+      font-size: 15px;
+    }
+
+    .btn-primary {
+      background-color: var(--success);
+      border: none;
+      font-weight: 500;
+      border-radius: 10px;
+    }
+
+    .report-container {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-top: 16px;
+    }
+
+    body.dark-mode .report-container {
+      background: #2f2f2f;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .voice-button {
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .nav-tabs .nav-link.active {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .tab-content {
+      margin-top: 15px;
+    }
+
+    h1 {
+    font-size: 36px; /* Increased font size */
+    font-weight: 700; /* Made the text bolder */
+    text-align: center;
+    margin: 20px 0 30px; /* Adjusted spacing */
+  }
+  #voiceAssistant {
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 50px;
+    background-color: #4a90e2;
+    border: none;
+    color: white;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  #voiceAssistant:hover {
+    background-color: #357ab8;
+    transform: scale(1.05);
+  }
+
+  #voiceAssistant:active {
+    background-color: #2b5f8a;
+    transform: scale(0.95);
+  }
+  </style>
 </head>
 <body>
-    <!-- Previous Health Reports Section -->
-    <div class="container-custom">
-        <h1>Previous Health Reports</h1>
-        <div id="reports">
-            <p class="loading">Fetching previous reports...</p>
-        </div>
+  <div class="container-custom fade-in">
+    <div class="text-end">
+      <button id="toggleMode" class="btn btn-primary btn-lg px-4 py-2">🌙</button>
     </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch("/get_reports")
-                .then(response => response.json())
-                .then(data => {
-                    const reportsDiv = document.getElementById("reports");
-                    reportsDiv.innerHTML = ""; // Clear the loading message
-                    data.reports.forEach(report => {
-                        const reportElement = document.createElement("div");
-                        reportElement.classList.add("report-container");
-                        reportElement.innerHTML = `<p>${report}</p>`;
-                        reportsDiv.appendChild(reportElement);
-                    });
-                })
-                .catch(error => {
-                    document.getElementById("reports").innerHTML = 
-                        "<p class='text-danger'>Failed to load reports.</p>";
-                });
-        });
-    </script>
+    <h1>DocAI - Health Portal</h1>
+    <div class="text-center mb-2">
+      <button id="voiceAssistant" class="btn btn-primary btn-lg px-4 py-2">Voice Assistant</button>
+    </div>
+    <br>
 
-<!-- Health Scan Section -->
-<div class="container-custom">
-    <h1>Health Scan</h1>
-    <video id="video" autoplay></video>
-    <button id="analyzeBtn" class="btn btn-primary btn-custom">Start Health Analysis</button>
-    <div id="result"></div>
+    <ul class="nav nav-tabs" id="tabMenu" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="patient-tab" data-bs-toggle="tab" data-bs-target="#patient" type="button" role="tab">Details</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="scan-tab" data-bs-toggle="tab" data-bs-target="#scan" type="button" role="tab">Scan</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#form" type="button" role="tab">Form</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image" type="button" role="tab">Image Analysis</button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="tabContent">
+      <!-- Patient Info Tab -->
+      <div class="tab-pane fade show active" id="patient" role="tabpanel">
+        <form id="patientInfoForm" method="POST" action="/submit-patient" class="mt-4">
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" name="full_name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" name="dob" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input type="text" class="form-control" name="phone" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-control" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Address</label>
+            <textarea class="form-control" name="address" rows="2" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Submit Patient Info</button>
+        </form>
+      </div>
+  
+      <!-- Health Scan Tab -->
+      <div class="tab-pane fade" id="scan" role="tabpanel">
+        <div class="card mt-3">
+          <div class="card-body">
+            <div class="video-container text-center mb-3">
+              <video id="video" autoplay muted playsinline style="display: none; width: 100%; border-radius: 12px;"></video>
+            </div>
+            <button id="analyzeBtn" class="btn-custom">Start Health Analysis</button>
+            <div id="lottieLoading" class="text-center mt-3" style="display: none;">
+              <lottie-player src="https://assets9.lottiefiles.com/packages/lf20_usmfx6bp.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+              <p>Processing health data...</p>
+            </div>
+            <div id="result" class="mt-4"></div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Health Form Tab -->
+      <div class="tab-pane fade" id="form" role="tabpanel">
+        <form id="healthForm" method="POST" action="/submit-form" class="mt-4">
+          <div class="mb-3">
+            <label class="form-label">1. What brings you in today?</label>
+            <input type="text" class="form-control" name="question1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">2. Recent changes in health or symptoms?</label>
+            <textarea class="form-control" name="question2" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">3. Any known allergies?</label>
+            <textarea class="form-control" name="question3" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">4. History of chronic diseases?</label>
+            <textarea class="form-control" name="question4" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">5. Are you on any medications?</label>
+            <textarea class="form-control" name="question5" rows="2" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Submit Form</button>
+        </form>
+      </div>
+  
+      <!-- Input Images Tab -->
+<div class="tab-pane fade" id="image" role="tabpanel">
+  <div class="card mt-3">
+    <div class="card-body">
+      <h4 class="card-title text-center">Upload Images for Analysis</h4>
+      <p class="text-muted text-center">Upload one or more images for AI-powered analysis.</p>
+      <form id="imageForm" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="images" class="form-label">Select Images</label>
+          <input class="form-control" type="file" id="images" name="images" accept="image/*" multiple required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Analyze Images</button>
+      </form>
+      <div id="imageResult" class="mt-4"></div>
+    </div>
+  </div>
 </div>
 
+  <footer class="text-center mt-4 mb-2">
+    <p>&copy; 2025 DocAI</p>
+  </footer>
+  <script>
+  const imageForm = document.getElementById('imageForm');
+  const imageResult = document.getElementById('imageResult');
+
+  imageForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(imageForm);
+
+    imageResult.innerHTML = `<p class="text-info">Analyzing images, please wait...</p>`;
+
+    fetch('/analyze-image', {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          imageResult.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
+        } else {
+          imageResult.innerHTML = `<p class="text-success">${data.message}</p>`;
+        }
+      })
+      .catch(error => {
+        console.error("Error analyzing images:", error);
+        imageResult.innerHTML = `<p class="text-danger">Error analyzing images: ${error.message}</p>`;
+      });
+  });
+</script>
 <script>
-    const video = document.getElementById("video");
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const resultDiv = document.getElementById("result");
+  const subscriptionForm = document.getElementById('subscriptionForm');
+  const subscriptionResult = document.getElementById('subscriptionResult');
 
-    analyzeBtn.onclick = function () {
-        resultDiv.innerHTML = "";
-        video.style.display = "block";
-        analyzeBtn.disabled = true;
+  subscriptionForm.addEventListener('submit', function (e) {
+    e.preventDefault();
 
-        // Start webcam
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then((stream) => {
-                video.srcObject = stream;
-            })
-            .catch((error) => {
-                console.error("Error accessing webcam:", error);
-                resultDiv.innerHTML = `<p class="text-danger">Unable to access webcam. Please check your device permissions.</p>`;
-                analyzeBtn.disabled = false;
-            });
+    const formData = new FormData(subscriptionForm);
 
-        // Simulate scanning effect
-        setTimeout(() => {
-            video.style.display = "none";
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(track => track.stop());
-            }
+    subscriptionResult.innerHTML = `<p class="text-info">Submitting your subscription, please wait...</p>`;
 
-            resultDiv.innerHTML = `<p class="loading">Processing your health data...</p>`;
-
-            fetch('/analyze')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Server error. Failed to analyze health data.");
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    
-                    resultDiv.innerHTML = `
-                        <div class="report-container">
-                            <h4>Health Data</h4>
-                            <p><strong>Heart Rate:</strong> ${data.heart_rate}</p>
-                            <p><strong>Hydration:</strong> ${data.hydration}</p>
-                            <p><strong>Temperature:</strong> ${data.temperature}</p>
-                            <p><strong>Blood Pressure:</strong> ${data.blood_pressure}</p>
-                            <p class="loading">Generating AI Health Report...</p>
-                        </div>
-                    `;
-
-                    return fetch('/report', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Failed to generate AI Health Report.");
-                    }
-                    return response.json();
-                })
-                .then(report => {
-                    resultDiv.innerHTML += `
-                        <div class="report-container">
-                            <h4>AI Health Report</h4>
-                            <p>${report.report}</p>
-                        </div>
-                    `;
-                    analyzeBtn.disabled = false;
-                })
-                .catch(error => {
-                    console.error(error);
-                    resultDiv.innerHTML = `<p class="text-danger">${error.message}</p>`;
-                    analyzeBtn.disabled = false;
-                });
-        }, 5000); // Simulate scanning for 5 seconds
-    };
+    fetch('/submit-subscription', {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          subscriptionResult.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
+        } else {
+          subscriptionResult.innerHTML = `<p class="text-success">${data.message}</p>`;
+        }
+      })
+      .catch(error => {
+        console.error("Error submitting subscription:", error);
+        subscriptionResult.innerHTML = `<p class="text-danger">Error submitting subscription: ${error.message}</p>`;
+      });
+  });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const video = document.getElementById("video");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const resultDiv = document.getElementById("result");
+  const lottie = document.getElementById("lottieLoading");
 
-    <!-- Connect with Doctor Section -->
-    <div class="container-custom">
-        <h1>Connect with a Doctor</h1>
-        <p>Select a doctor from the list below and start a consultation.</p>
-        <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. John Smith - Cardiologist <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. John Smith')">Chat</button></li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. Sarah Johnson - Neurologist <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. Sarah Johnson')">Chat</button></li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. Emily Davis - Pediatrician <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. Emily Davis')">Chat</button></li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">Dr. Michael Brown - Dermatologist <button class="btn btn-outline-primary btn-sm" onclick="startChat('Dr. Michael Brown')">Chat</button></li>
-        </ul>
-    </div>
+  analyzeBtn.onclick = function () {
+    resultDiv.innerHTML = "";
+    lottie.style.display = "block";
+    video.style.display = "block";
+    analyzeBtn.disabled = true;
 
-    <!-- Chat Section -->
-    <div class="chat-container" id="chatContainer">
-        <div class="chat-header">
-            <h2 id="chatDoctor">Chat with Doctor</h2>
-            <button class="btn btn-danger btn-sm" onclick="closeChat()">Close</button>
-        </div>
-        <div class="chat-box" id="chatBox"></div>
-        <div class="chat-input-container">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Type a message...">
-            <button class="btn btn-primary btn-custom" onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-    <script>
-        let currentDoctor = "";
+    navigator.mediaDevices.getUserMedia({
+  video: {
+    facingMode: "user" // Use front-facing camera on mobile
+  }
+})
+.then((stream) => {
+  const video = document.getElementById("video");
+  video.srcObject = stream;
 
-        function startChat(doctorName) {
-            currentDoctor = doctorName;
-            document.getElementById("chatDoctor").innerText = `Chat with ${doctorName}`;
-            document.getElementById("chatContainer").style.display = "block";
-        }
+  // Required for iOS Safari to not go fullscreen
+  video.setAttribute("playsinline", true);
+  video.style.display = "block"; // Show video element
+})
+.catch((error) => {
+  console.error("Camera access error:", error);
+  alert("Unable to access camera. Please check permissions and reload the page.");
+});
 
-        function sendMessage() {
-            const chatBox = document.getElementById("chatBox");
-            const chatInput = document.getElementById("chatInput");
-            const message = chatInput.value.trim();
 
-            if (message) {
-                chatBox.innerHTML += `<div class="chat-message user-message"><strong>You:</strong> ${message}</div>`;
-                chatInput.value = "";
+    setTimeout(() => {
+      video.style.display = "none";
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
 
-                chatBox.scrollTop = chatBox.scrollHeight;
+      fetch('/analyze')
+        .then(response => response.json())
+        .then(data => {
+          lottie.style.display = "none";
+          resultDiv.innerHTML = `
+            <div class="report-container fade-in">
+              <h4>Health Data</h4>
+              <p><strong>Heart Rate:</strong> ${data.heart_rate}</p>
+              <p><strong>Hydration:</strong> ${data.hydration}</p>
+              <p><strong>Temperature:</strong> ${data.temperature}</p>
+              <p><strong>Blood Pressure:</strong> ${data.blood_pressure}</p>
+              <p class="loading">Report sent to the doctor. Please wait...</p>
+            </div>
+          `;
 
-                fetch('/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ doctor: currentDoctor, message: message })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.response) {
-                            chatBox.innerHTML += `
-                                <div class="chat-message doctor-message">
-                                    <strong>${currentDoctor}:</strong> ${data.response}
-                                </div>
-                            `;
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                        } else {
-                            chatBox.innerHTML += `<div class="chat-message doctor-message text-danger">Error: No response received.</div>`;
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Chat API error:", error);
-                        chatBox.innerHTML += `<div class="chat-message doctor-message text-danger">Error: Could not reach the server.</div>`;
-                    });
-            }
-        }
+          return fetch('/send_report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        })
+        .then(response => response.json())
+        .then(result => {
+          Swal.fire({
+            title: "Report Sent!",
+            text: "Your health report was sent to the doctor successfully.",
+            icon: "success",
+            confirmButtonColor: "#4a90e2"
+          });
+        })
+        .catch(error => {
+          console.error("Error sending report:", error);
+          Swal.fire({
+            title: "Oops...",
+            text: "There was an error sending the report. Please try again.",
+            icon: "error",
+            confirmButtonColor: "#4a90e2"
+          });
+        })
+        .finally(() => {
+          analyzeBtn.disabled = false;
+        });
+    }, 4000);
+  };
 
-        function closeChat() {
-            document.getElementById("chatContainer").style.display = "none";
-        }
+  document.getElementById("toggleMode").onclick = () => {
+    document.body.classList.toggle("dark-mode");
+  };
+
+  document.getElementById("voiceAssistant").onclick = () => {
+    const message = new SpeechSynthesisUtterance("Welcome to DocAI. You can start a health scan, fill in the form, or upload an image for analysis. Please begin by selecting a tab, before the doctor arrives.");
+    message.lang = 'en-US';
+    speechSynthesis.speak(message);
+  };
+  // Patient Info Submission Confirmation
+document.getElementById("patientInfoForm").addEventListener("submit", function (event) {
+  event.preventDefault();
+  const form = event.target;
+
+  fetch(form.action, {
+    method: 'POST',
+    body: new FormData(form)
+  })
+  .then(response => response.text())
+  .then(result => {
+    Swal.fire({
+      title: "Submitted!",
+      text: "Patient information was sent successfully.",
+      icon: "success",
+      confirmButtonColor: "#4a90e2"
+    });
+    form.reset();
+  })
+  .catch(error => {
+    Swal.fire({
+      title: "Error!",
+      text: "There was a problem submitting the patient info.",
+      icon: "error",
+      confirmButtonColor: "#4a90e2"
+    });
+    console.error("Error submitting patient info:", error);
+  });
+});
+
     </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
