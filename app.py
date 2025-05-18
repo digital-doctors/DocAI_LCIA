@@ -1,27 +1,70 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import random
 import time
-import cohere
 import smtplib
+import base64
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import base64
-from cohere import ClientV2
-from flask import session
+from cohere import Client
 from flask_session import Session
+from huggingface_hub import InferenceClient
+import numpy as np
+from PIL import Image
+from scipy.signal import butter, filtfilt, find_peaks
+import io
 
-
+# Initialize Flask app
 app = Flask(__name__)
 
-# Replace with your actual Cohere API key
-COHERE_API_KEY = "oaiXjisZYMP0ZrNLdEHKSPduxKpJSIKZLAzIJ2aZ"
-co = cohere.Client(COHERE_API_KEY)
+# Configurations for Flask session
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SECRET_KEY'] = '2029240f6d1128be89ddc32729463129'
+Session(app)
 
+# Set Cohere API key and initialize client
+COHERE_API_KEY = "oaiXjisZYMP0ZrNLdEHKSPduxKpJSIKZLAzIJ2aZ"
+co = Client(COHERE_API_KEY)
+
+# Set up Huggingface API client
+client = InferenceClient(
+    provider="cohere",
+    api_key=COHERE_API_KEY
+)
+
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session:
+            return redirect('http://127.0.0.1:5000/login')  # Redirect to login if user is not in session
+        return f(*args, **kwargs)  # Allow access to the decorated function if user is in session
+    return decorated_function
+
+
+# Bandpass filter for signal processing
+def butter_bandpass(lowcut, highcut, fs, order=5):
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    return butter(order, [low, high], btype='band')
+
+def bandpass_filter(data, lowcut=0.75, highcut=2.5, fs=30, order=5):
+    b, a = butter_bandpass(lowcut, highcut, fs, order=order)
+    return filtfilt(b, a, data)
+
+def moving_average(data, window_size=5):
+    """Simple moving average filter."""
+    return np.convolve(data, np.ones(window_size) / window_size, mode='valid')
+
+# Routes
 @app.route('/')
+@login_required
 def home():
     return render_template('index.html')
 
 @app.route('/get_reports')
+@login_required
 def get_reports():
     reports = [
         "Report 1: Normal",
@@ -30,97 +73,9 @@ def get_reports():
     ]
     return jsonify({"reports": reports})
 
-@app.route('/analyze', methods=['GET'])
-def analyze():
-    try:
-        time.sleep(3)  # Simulating a health analysis process
-
-        # Generate random health data
-        health_data = {
-            "heart_rate": f"{random.randint(65, 100)} BPM",
-            "hydration": random.choice(["Normal", "Mild Dehydration", "Severe Dehydration"]),
-            "temperature": f"{round(random.uniform(97.0, 99.5), 1)} °F",
-            "blood_pressure": f"{random.randint(110, 135)}/{random.randint(70, 90)} mmHg"
-        }
-        return jsonify(health_data)
-    except Exception as e:
-        return jsonify({"error": f"Failed to analyze health data: {str(e)}"}), 500
-
-@app.route('/send_report', methods=['POST'])
-def send_report():
-    try:
-        data = request.get_json()
-
-        # Validate the input data
-        if not all(key in data for key in ["heart_rate", "hydration", "temperature", "blood_pressure"]):
-            return jsonify({"error": "Invalid input data"}), 400
-
-        # Generate the AI health report using Cohere API
-        query = (
-            f"Generate a professional health report based on the following:\n"
-            f"- Heart Rate: {data['heart_rate']}\n"
-            f"- Hydration Status: {data['hydration']}\n"
-            f"- Temperature: {data['temperature']}\n"
-            f"- Blood Pressure: {data['blood_pressure']}\n\n"
-            f"Provide insights and recommendations in a clear and helpful way."
-        )
-
-        response = co.generate(
-            model="command-light",
-            prompt=query,
-            max_tokens=300,
-            temperature=0.7
-        )
-        ai_report = response.generations[0].text.strip()
-
-        # Email setup
-        sender_email = "Nikmaproducts@gmail.com"
-        sender_password = "rqri izcc ybnd conx"  # Your app password
-        recipient_email = "nikhi.kanda@gmail.com"
-
-        # Subject and email body with vitals and AI report
-        subject = "AI-Generated Patient Health Report"
-        body = f"""Dear Doctor,
-
-Here is the AI-generated health report for the patient:
-
-Vital Health Data:
-- Heart Rate: {data['heart_rate']}
-- Hydration Status: {data['hydration']}
-- Temperature: {data['temperature']}
-- Blood Pressure: {data['blood_pressure']}
-
-AI Insights and Recommendations:
-{ai_report}
-
-Best regards,
-DocAI
-"""
-
-        # Set up the email
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = recipient_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-
-        # Send the email
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-
-        print(f"Email sent successfully to {recipient_email}")
-        return jsonify({"message": "AI-generated report successfully sent to the doctor."})
-
-    except cohere.error.CohereError as ce:
-        print(f"Cohere API error: {str(ce)}")
-        return jsonify({"error": f"Cohere API error: {str(ce)}"}), 500
-    except Exception as e:
-        print(f"Failed to send report: {str(e)}")
-        return jsonify({"error": f"Failed to send report: {str(e)}"}), 500
 
 @app.route('/submit-form', methods=['POST'])
+@login_required
 def submit_form():
     try:
         form_data = request.form.to_dict()
@@ -128,7 +83,7 @@ def submit_form():
         # Compile the form data into an email-style summary
         summary = "\n".join([f"{k.replace('_', ' ').title()}: {v}" for k, v in form_data.items()])
 
-        # Email setup
+        # Send email with summary
         sender_email = "Nikmaproducts@gmail.com"
         sender_password = "rqri izcc ybnd conx"
         recipient_email = "nikhi.kanda@gmail.com"
@@ -144,7 +99,6 @@ Best regards,
 DocAI
 """
 
-        # Send the email
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = recipient_email
@@ -156,14 +110,12 @@ DocAI
             server.login(sender_email, sender_password)
             server.send_message(msg)
 
-        print("Health form submitted and emailed successfully.")
         return "Form submitted successfully. Thank you!", 200
-
     except Exception as e:
-        print(f"Error submitting form: {str(e)}")
         return f"Error submitting form: {str(e)}", 500
 
 @app.route('/submit-patient', methods=['POST'])
+@login_required
 def submit_patient():
     try:
         patient_data = request.form.to_dict()
@@ -195,21 +147,12 @@ DocAI
             server.login(sender_email, sender_password)
             server.send_message(msg)
 
-        print("Patient information submitted and emailed successfully.")
         return "Patient info submitted successfully.", 200
-
     except Exception as e:
-        print(f"Error submitting patient info: {str(e)}")
         return f"Error: {str(e)}", 500
 
-from huggingface_hub import InferenceClient
-
-client = InferenceClient(
-    provider="cohere",
-    api_key="oaiXjisZYMP0ZrNLdEHKSPduxKpJSIKZLAzIJ2aZ",
-)
-
 @app.route('/analyze-image', methods=['POST'])
+@login_required
 def analyze_image():
     try:
         uploaded_files = request.files.getlist("images")
@@ -236,7 +179,7 @@ def analyze_image():
                     "content": [
                         {
                             "type": "text",
-                            "text": "This is a medical image. First, give a label on what the issue (disease, allergy, etc.) this may be. Then Describe any visible conditions or abnormalities you notice, respond like Medical Assistant with accuracy."
+                            "text": "This is a medical image. First, give a label on what the issue (disease, allergy, etc.) this may be. Then describe any visible conditions or abnormalities you notice, respond like Medical Assistant with accuracy."
                         },
                         {
                             "type": "image_url",
@@ -285,15 +228,134 @@ DocAI
             server.login(sender_email, sender_password)
             server.send_message(msg)
 
-        print("Image analysis report emailed successfully.")
         return jsonify({"message": "Image analysis report sent successfully."}), 200
-
     except Exception as e:
-        print(f"Unexpected error during image analysis: {str(e)}")
         return jsonify({"error": f"Image analysis failed: {str(e)}"}), 500
 
+@app.route('/analyze_ppg', methods=['POST'])
+@login_required
+def analyze_ppg():
+    try:
+        data = request.get_json()
+        fps = data.get("fps", 30)  # Default to 30 FPS if not provided
+        frames = data.get("frames", [])
+
+        if not frames or len(frames) < 20:
+            return jsonify({"error": "Not enough data frames provided"}), 400
+
+        green_intensities = []
+        red_intensities = []
+
+        # Process each frame
+        for frame in frames:
+            try:
+                # Decode the base64 image
+                image_data = base64.b64decode(frame.split(",")[1])
+                image = Image.open(io.BytesIO(image_data)).convert("RGB")
+                pixels = np.array(image)
+
+                # Extract green and red channel intensities
+                green_avg = np.mean(pixels[:, :, 1])  # Green channel
+                red_avg = np.mean(pixels[:, :, 2])    # Red channel
+
+                green_intensities.append(green_avg)
+                red_intensities.append(red_avg)
+            except Exception as e:
+                print(f"Error processing frame: {e}")
+                continue
+
+        # Ensure we have enough data
+        if len(green_intensities) < 20:
+            return jsonify({"error": "Not enough valid frames for analysis"}), 400
+
+        # Heart Rate Calculation
+        green_signal = np.array(green_intensities)
+        green_signal -= np.mean(green_signal)  # Remove DC component
+        filtered_signal = bandpass_filter(green_signal, lowcut=0.75, highcut=2.5, fs=fps, order=4)
+
+        # Find peaks in the filtered signal
+        peaks, _ = find_peaks(filtered_signal, distance=fps / 2)  # Minimum 0.5 seconds between peaks
+        if len(peaks) > 1:
+            ibi = np.diff(peaks) / fps  # Inter-beat intervals in seconds
+            heart_rate = int(60 / np.mean(ibi))  # Convert to BPM
+        else:
+            heart_rate = None
+
+        # Temperature Estimation
+        if len(red_intensities) >= fps:
+            smoothed_red = moving_average(red_intensities[-fps:], window_size=5)
+            temp_index = np.mean(smoothed_red)
+            temperature = round((34.0 + (temp_index - 100) * 0.05) * 9 / 5 + 32, 1)
+        else:
+            temperature = None
+
+        
+
+        # Generate and send the health report
+        return generate_ppg_report(co, heart_rate, temperature)
+
+    except Exception as e:
+        return jsonify({"error": f"Error analyzing PPG: {str(e)}"}), 500
+
+
+def generate_ppg_report(cohere, heart_rate, temperature):
+    try:
+        # Generate AI health report using Cohere API
+        query = (
+            f"You are a helpful doctor. Please generate a professional health report based on the following:\n"
+            f"- Heart Rate: {heart_rate}\n"
+            f"- Temperature: {temperature}\n"
+            f"Provide insights and recommendations in a clear and helpful way."
+        )
+
+        response = cohere.generate(
+            model="command-light",
+            prompt=query,
+            max_tokens=300,
+            temperature=0.7
+        )
+        ai_report = response.generations[0].text.strip()
+
+        # Email setup
+        sender_email = "Nikmaproducts@gmail.com"
+        sender_password = "rqri izcc ybnd conx"  # Your app password
+        recipient_email = "nikhi.kanda@gmail.com"
+
+        # Subject and email body with vitals and AI report
+        subject = "AI-Generated Patient Health Report"
+        body = f"""Dear Doctor,
+
+Here is the AI-generated health report for the patient:
+
+Vital Health Data:
+- Heart Rate: {heart_rate}
+- Temperature: {temperature}
+
+AI Insights and Recommendations:
+{ai_report}
+
+Best regards,
+DocAI
+"""
+
+        # Set up and send email
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = recipient_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+
+        return jsonify({"message": "AI-generated report successfully sent to the doctor."})
+    
+    except cohere.error.CohereError as ce:
+        return jsonify({"error": f"Cohere API error: {str(ce)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Failed to send report: {str(e)}"}), 500 
 
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 5001))  # Default to port 5001 if PORT is not set
-    app.run(host='0.0.0.0', debug=True, port=port)
+    app.run(host='0.0.0.0', port=3000)
