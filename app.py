@@ -32,14 +32,6 @@ client = InferenceClient(
     api_key=COHERE_API_KEY
 )
 
-def login_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user' not in session:
-            return redirect('http://127.0.0.1:5000/login')  # Redirect to login if user is not in session
-        return f(*args, **kwargs)  # Allow access to the decorated function if user is in session
-    return decorated_function
 
 
 # Bandpass filter for signal processing
@@ -59,12 +51,12 @@ def moving_average(data, window_size=5):
 
 # Routes
 @app.route('/')
-@login_required
 def home():
     return render_template('index.html')
 
+
 @app.route('/get_reports')
-@login_required
+
 def get_reports():
     reports = [
         "Report 1: Normal",
@@ -75,7 +67,7 @@ def get_reports():
 
 
 @app.route('/submit-form', methods=['POST'])
-@login_required
+
 def submit_form():
     try:
         form_data = request.form.to_dict()
@@ -115,7 +107,7 @@ DocAI
         return f"Error submitting form: {str(e)}", 500
 
 @app.route('/submit-patient', methods=['POST'])
-@login_required
+
 def submit_patient():
     try:
         patient_data = request.form.to_dict()
@@ -152,7 +144,7 @@ DocAI
         return f"Error: {str(e)}", 500
 
 @app.route('/analyze-image', methods=['POST'])
-@login_required
+
 def analyze_image():
     try:
         uploaded_files = request.files.getlist("images")
@@ -233,7 +225,7 @@ DocAI
         return jsonify({"error": f"Image analysis failed: {str(e)}"}), 500
 
 @app.route('/analyze_ppg', methods=['POST'])
-@login_required
+
 def analyze_ppg():
     try:
         data = request.get_json()
@@ -358,4 +350,6 @@ DocAI
         return jsonify({"error": f"Failed to send report: {str(e)}"}), 500 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000)
+    import os
+    port = int(os.environ.get("PORT", 5001))  # Default to port 5001 if PORT is not set
+    app.run(host='0.0.0.0', debug=True, port=port)
